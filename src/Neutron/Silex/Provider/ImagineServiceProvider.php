@@ -11,12 +11,12 @@
 
 namespace Neutron\Silex\Provider;
 
-use Silex\Application;
-use Silex\ServiceProviderInterface;
+use Pimple\ServiceProviderInterface;
+use Pimple\Container;
 
 class ImagineServiceProvider implements ServiceProviderInterface
 {
-    public function register(Application $app)
+    public function register(Container $app)
     {
         if (class_exists('\Gmagick')) {
             $app['imagine.driver'] = 'Gmagick';
@@ -26,14 +26,15 @@ class ImagineServiceProvider implements ServiceProviderInterface
             $app['imagine.driver'] = 'Gd';
         }
 
-        $app['imagine'] = $app->share(function(Application $app) {
+        $app['imagine'] = function($app) {
             $classname = sprintf('Imagine\%s\Imagine', $app['imagine.driver']);
+            $imagine = new $classname;
 
-            return new $classname;
-        });
+            return $imagine;
+        };
     }
 
-    public function boot(Application $app)
+    public function boot($app)
     {
     }
 }
